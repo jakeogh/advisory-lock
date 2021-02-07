@@ -154,15 +154,11 @@ def cli(ctx,
         end = '\n'
         assert not ipython
 
-    if (verbose or debug):
-        progress = False
-
     ctx.ensure_object(dict)
     ctx.obj['verbose'] = verbose
     ctx.obj['debug'] = debug
     ctx.obj['end'] = end
     ctx.obj['null'] = null
-    ctx.obj['progress'] = progress
     ctx.obj['count'] = count
     ctx.obj['skip'] = skip
     ctx.obj['head'] = head
