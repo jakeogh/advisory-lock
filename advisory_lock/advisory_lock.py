@@ -165,6 +165,7 @@ def cli(ctx,
     ctx.obj['head'] = head
     ctx.obj['tail'] = tail
 
+    path = Path(path)
     with AdvisoryLock(path=path,
                       open_read=True,
                       open_write=False,
