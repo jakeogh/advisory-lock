@@ -83,6 +83,7 @@ class AdvisoryLock():
         # O_EXCL        Ensure that this call creates the file
         if not self.file_exists:
             flags |= os.O_CREAT | os.O_EXCL
+        assert self.path.exists()
 
         self.fd = os.open(self.path, flags, 0o600)
         if self.debug:
