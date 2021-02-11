@@ -96,10 +96,12 @@ class AdvisoryLock():
         # LOCK_NB       Nonblocking request
         if self.flock:
             fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
+            if self.debug:
+                ic('got (flock) lock:', self.path)
         else:
             fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
-        if self.debug:
-            ic('got lock:', self.path)
+            if self.debug:
+                ic('got (lockf) lock:', self.path)
 
         return self.fd
 
