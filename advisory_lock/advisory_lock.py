@@ -93,8 +93,8 @@ class AdvisoryLock():
         # LOCK_EX       Place an exclusive lock.  Only one process may hold an exclusive lock for a given file at a given time.
         # LOCK_NB       Nonblocking request
         #fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
-        #fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
-        fcntl.lockf(self.fd, fcntl.LOCK_EX)  # acquire a non-blocking advisory lock
+        fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
+        #fcntl.lockf(self.fd, fcntl.LOCK_EX)  # acquire a non-blocking advisory lock
         if self.debug:
             ic('got lock:', self.path)
 
