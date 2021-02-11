@@ -165,6 +165,10 @@ def cli(ctx,
     ctx.obj['tail'] = tail
 
     path = Path(path)
+    if not flock:
+        if not write:
+            raise ValueError('lockf() requires a O_RDWR fd, specify --write')
+
     with AdvisoryLock(path=path,
                       open_read=not no_read,
                       open_write=write,
