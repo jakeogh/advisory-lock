@@ -95,24 +95,6 @@ class AdvisoryLock():
 
         return self.fd
 
-        #file = io.open(self.fd,
-        #               mode="w+b",
-        #               buffering=-1,
-        #               newline=None,
-        #               encoding=None,
-        #               errors=None)
-        #if self.debug:
-        #    ic(file)
-
-        #self.tmp = _TemporaryFileWrapper(file=file,
-        #                                 name=self.name,
-        #                                 delete=False)
-
-        #if self.debug:
-        #    ic(self.tmp)
-        ##ic(self.fd, self.tmp.name)
-        #return self.tmp
-
     def __exit__(self, etype, value, traceback):
         if self.debug:
             ic(etype)
@@ -120,6 +102,7 @@ class AdvisoryLock():
             ic(traceback)
 
         fcntl.lockf(self.fd, fcntl.LOCK_UN)
+        os.close(self.fd)
 
 
 # import pdb; pdb.set_trace()
@@ -175,52 +158,3 @@ def cli(ctx,
         ic(fl)
         import IPython
         IPython.embed()
-
-
-    #locks = []
-    #iterator = paths
-    #for index, path in enumerate_input(iterator=iterator,
-    #                                   null=null,
-    #                                   progress=progress,
-    #                                   skip=skip,
-    #                                   head=head,
-    #                                   tail=tail,
-    #                                   debug=debug,
-    #                                   verbose=verbose,):
-    #    path = Path(path)
-
-    #    if verbose:
-    #        ic(index, path)
-
-    #    with Ad(path, 'rb') as fh:
-    #        path_bytes_data = fh.read()
-
-    #    if not count:
-    #        print(path, end=end)
-
-
-#   #     if ipython:
-#   #         import IPython; IPython.embed()
-
-#@cli.command()
-#@click.argument("urls", type=str, nargs=-1)
-#@click.pass_context
-#def some_command(ctx, urls):
-#    pass
-#    iterator = urls
-#    for index, url in enumerate_input(iterator=iterator,
-#                                      null=ctx.obj['null'],
-#                                      progress=ctx.obj['progress'],
-#                                      skip=ctx.obj['skip'],
-#                                      head=ctx.obj['head'],
-#                                      tail=ctx.obj['tail'],
-#                                      debug=ctx.obj['debug'],
-#                                      verbose=ctx.obj['verbose'],):
-#
-#        if ctx.obj['verbose']:
-#            ic(index, url)
-
-
-
-
-
