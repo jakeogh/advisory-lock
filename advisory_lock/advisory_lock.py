@@ -116,6 +116,8 @@ class AdvisoryLock():
 @click.command()
 @click.argument("path", type=str, nargs=1)
 @click.option('--verbose', is_flag=True)
+@click.option('--no-read', is_flag=True)
+@click.option('--write', is_flag=True)
 @click.option('--debug', is_flag=True)
 @click.option('--ipython', is_flag=True)
 @click.option('--count', is_flag=True)
@@ -126,6 +128,8 @@ class AdvisoryLock():
 @click.pass_context
 def cli(ctx,
         path,
+        no_read: bool,
+        write: bool,
         verbose: bool,
         debug: bool,
         ipython: bool,
@@ -155,8 +159,8 @@ def cli(ctx,
 
     path = Path(path)
     with AdvisoryLock(path=path,
-                      open_read=True,
-                      open_write=False,
+                      open_read=not no_read,
+                      open_write=write,
                       file_exists=True,
                       verbose=verbose,
                       debug=debug,) as fl:
