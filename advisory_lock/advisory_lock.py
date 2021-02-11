@@ -48,6 +48,7 @@ class AdvisoryLock():
                  file_exists: bool,
                  open_read: bool,
                  open_write: bool,
+                 flock: bool,
                  verbose: bool,
                  debug: bool,):
 
@@ -57,6 +58,7 @@ class AdvisoryLock():
         self.file_exists = file_exists
         self.open_read = open_read
         self.open_write = open_write
+        self.flock = flock
         if debug:
             ic(self.path)
 
@@ -92,9 +94,10 @@ class AdvisoryLock():
         # race here _unless_ flags has os.O_CREAT | os.O_EXCL
         # LOCK_EX       Place an exclusive lock.  Only one process may hold an exclusive lock for a given file at a given time.
         # LOCK_NB       Nonblocking request
-        #fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
-        fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
-        #fcntl.lockf(self.fd, fcntl.LOCK_EX)  # acquire a non-blocking advisory lock
+        if self.flock:
+            fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
+        else:
+            fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
         if self.debug:
             ic('got lock:', self.path)
 
@@ -117,6 +120,7 @@ class AdvisoryLock():
 @click.argument("path", type=str, nargs=1)
 @click.option('--verbose', is_flag=True)
 @click.option('--no-read', is_flag=True)
+@click.option('--flock', is_flag=True)
 @click.option('--write', is_flag=True)
 @click.option('--debug', is_flag=True)
 @click.option('--ipython', is_flag=True)
@@ -130,6 +134,7 @@ def cli(ctx,
         path,
         no_read: bool,
         write: bool,
+        flock: bool,
         verbose: bool,
         debug: bool,
         ipython: bool,
@@ -161,6 +166,7 @@ def cli(ctx,
     with AdvisoryLock(path=path,
                       open_read=not no_read,
                       open_write=write,
+                      flock=flock,
                       file_exists=True,
                       verbose=verbose,
                       debug=debug,) as fl:
