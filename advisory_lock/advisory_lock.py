@@ -87,8 +87,11 @@ class AdvisoryLock():
 
         self.fd = os.open(self.path, flags, 0o600)
         if self.debug:
-            ic(self.path, self.fd)
+            ic(self.fd, os.fstat(self.fd), self.path)
+
         # race here _unless_ flags has os.O_CREAT | os.O_EXCL
+        # LOCK_EX       Place an exclusive lock.  Only one process may hold an exclusive lock for a given file at a given time.
+        # LOCK_NB       Nonblocking request
         fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
         if self.debug:
             ic('got lock:', self.path)
