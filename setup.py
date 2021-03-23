@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
+from setuptools import find_packages
+from setuptools import setup
+
 import fastentrypoints
-from setuptools import find_packages, setup
+
 if not sys.version_info[0] == 3:
     sys.exit("Python 3 is required. Use: \'python3 setup.py install\'")
 
@@ -25,7 +29,7 @@ config = {
     "install_requires": dependencies,
     "entry_points": {
         "console_scripts": [
-            "advisory_lock=advisory_lock.advisory_lock:cli",
+            "advisory-lock=advisory_lock.advisory_lock:cli",
         ],
     },
 }
