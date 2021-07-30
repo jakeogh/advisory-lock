@@ -46,6 +46,7 @@ class AdvisoryLock():
                  debug: bool,
                  ):
 
+        ic(verbose)
         self.verbose = verbose
         self.debug = debug
         self.path = path
