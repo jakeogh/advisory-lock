@@ -25,20 +25,11 @@ import sys
 from pathlib import Path
 
 import click
+from asserttool import eprint
+from asserttool import ic
+from asserttool import nevd
 from enumerate_input import enumerate_input
 from retry_on_exception import retry_on_exception
-
-
-def eprint(*args, **kwargs):
-    if 'file' in kwargs.keys():
-        kwargs.pop('file')
-    print(*args, file=sys.stderr, **kwargs)
-
-
-try:
-    from icecream import ic  # https://github.com/gruns/icecream
-except ImportError:
-    ic = eprint
 
 
 # https://docs.python.org/3/library/fcntl.html
@@ -130,7 +121,6 @@ class AdvisoryLock():
 @click.option('--skip', type=int, default=False)
 @click.option('--head', type=int, default=False)
 @click.option('--tail', type=int, default=False)
-@click.option("--printn", is_flag=True)
 @click.pass_context
 def cli(ctx,
         path,
@@ -144,15 +134,14 @@ def cli(ctx,
         skip: int,
         head: int,
         tail: int,
-        printn: bool,):
+        ):
 
-    null = not printn
-    end = '\n'
-    if null:
-        end = '\x00'
-    if sys.stdout.isatty():
-        end = '\n'
-        assert not ipython
+
+    null, end, verbose, debug = nevd(ctx=ctx,
+                                     printn=False,
+                                     ipython=False,
+                                     verbose=verbose,
+                                     debug=debug,)
 
     ctx.ensure_object(dict)
     ctx.obj['verbose'] = verbose
@@ -164,7 +153,7 @@ def cli(ctx,
     ctx.obj['head'] = head
     ctx.obj['tail'] = tail
 
-    path = Path(path)
+    path = Path(path).expanduser()
     if not flock:
         if not write:
             raise ValueError('lockf() requires a O_RDWR fd, specify --write')
