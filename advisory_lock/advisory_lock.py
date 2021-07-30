@@ -35,7 +35,6 @@ from retry_on_exception import retry_on_exception
 
 # https://docs.python.org/3/library/fcntl.html
 class AdvisoryLock():
-    @increment_debug
     def __init__(self,
                  path: Path, *,
                  file_exists: bool,
