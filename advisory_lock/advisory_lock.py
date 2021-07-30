@@ -27,6 +27,7 @@ from pathlib import Path
 import click
 from asserttool import eprint
 from asserttool import ic
+from asserttool import increment_debug
 from asserttool import nevd
 from enumerate_input import enumerate_input
 from retry_on_exception import retry_on_exception
@@ -34,6 +35,7 @@ from retry_on_exception import retry_on_exception
 
 # https://docs.python.org/3/library/fcntl.html
 class AdvisoryLock():
+    @increment_debug
     def __init__(self,
                  path: Path, *,
                  file_exists: bool,
@@ -41,7 +43,8 @@ class AdvisoryLock():
                  open_write: bool,
                  flock: bool,
                  verbose: bool,
-                 debug: bool,):
+                 debug: bool,
+                 ):
 
         self.verbose = verbose
         self.debug = debug
@@ -79,7 +82,7 @@ class AdvisoryLock():
         assert self.path.exists()
 
         self.fd = os.open(self.path, flags, 0o600)
-        if self.debug:
+        if self.verbose > 2:
             ic(self.fd, os.fstat(self.fd), self.path)
 
         # race here _unless_ flags has os.O_CREAT | os.O_EXCL
@@ -117,10 +120,6 @@ class AdvisoryLock():
 @click.option('--write', is_flag=True)
 @click.option('--debug', is_flag=True)
 @click.option('--ipython', is_flag=True)
-@click.option('--count', is_flag=True)
-@click.option('--skip', type=int, default=False)
-@click.option('--head', type=int, default=False)
-@click.option('--tail', type=int, default=False)
 @click.pass_context
 def cli(ctx,
         path,
@@ -130,12 +129,7 @@ def cli(ctx,
         verbose: bool,
         debug: bool,
         ipython: bool,
-        count: bool,
-        skip: int,
-        head: int,
-        tail: int,
         ):
-
 
     null, end, verbose, debug = nevd(ctx=ctx,
                                      printn=False,
@@ -148,10 +142,6 @@ def cli(ctx,
     ctx.obj['debug'] = debug
     ctx.obj['end'] = end
     ctx.obj['null'] = null
-    ctx.obj['count'] = count
-    ctx.obj['skip'] = skip
-    ctx.obj['head'] = head
-    ctx.obj['tail'] = tail
 
     path = Path(path).expanduser()
     if not flock:
@@ -166,5 +156,6 @@ def cli(ctx,
                       verbose=verbose,
                       debug=debug,) as fl:
         ic(fl)
-        import IPython
-        IPython.embed()
+        if ipython:
+            import IPython
+            IPython.embed()
