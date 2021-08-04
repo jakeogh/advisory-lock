@@ -45,7 +45,6 @@ class AdvisoryLock():
                  debug: bool,
                  ):
 
-        ic(verbose)
         self.verbose = verbose
         self.debug = debug
         self.path = path
@@ -82,7 +81,6 @@ class AdvisoryLock():
         assert self.path.exists()
 
         self.fd = os.open(self.path, flags, 0o600)
-        ic(self.verbose)
         if self.verbose > 2:
             ic(self.fd, os.fstat(self.fd), self.path)
 
