@@ -132,8 +132,8 @@ class AdvisoryLock():
 @click.argument("path", type=str, nargs=1)
 @click.option('--verbose', is_flag=True)
 @click.option('--no-read', is_flag=True)
-@click.option('--flock', is_flag=True)
-@click.option('--write', is_flag=True)
+@click.option('--flock', is_flag=True)  # making lockf the default, implies --write, on the other hand, lockf WORKS in all cases (with --write)... because flock is broken on NFS
+@click.option('--write', is_flag=True)  # as-is, this reqires thought, so it's good for now
 @click.option('--debug', is_flag=True)
 @click.option('--ipython', is_flag=True)
 @click.pass_context
@@ -160,7 +160,7 @@ def cli(ctx,
     ctx.obj['null'] = null
 
     path = Path(path).expanduser()
-    if not flock:
+    if not flock:  # flock is broken on NFS
         if not write:
             raise ValueError('lockf() requires a O_RDWR fd, specify --write')
 
