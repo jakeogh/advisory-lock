@@ -21,16 +21,33 @@
 
 import fcntl
 import os
-import sys
+#import sys
 from pathlib import Path
 
 import click
-from asserttool import eprint
+#from asserttool import increment_debug
+#from asserttool import eprint
 from asserttool import ic
-from asserttool import increment_debug
 from asserttool import nevd
-from enumerate_input import enumerate_input
-from retry_on_exception import retry_on_exception
+
+#from enumerate_input import enumerate_input
+#from retry_on_exception import retry_on_exception
+
+
+def path_is_advisory_locked(path: Path,
+                            verbose: bool,
+                            debug: bool,
+                            ) -> None:
+
+    with AdvisoryLock(path=path,
+                      open_read=False,
+                      open_write=False,
+                      flock=False,
+                      file_exists=True,
+                      verbose=verbose,
+                      debug=debug,) as fl:
+        raise AssertionError(path.as_posix(), 'was not advisory locked')
+    return  #all good
 
 
 # https://docs.python.org/3/library/fcntl.html
