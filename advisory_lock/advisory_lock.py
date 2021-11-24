@@ -25,8 +25,6 @@ import os
 from pathlib import Path
 
 import click
-#from asserttool import increment_debug
-#from asserttool import eprint
 from asserttool import ic
 from asserttool import nevd
 
@@ -41,7 +39,7 @@ def path_is_advisory_locked(path: Path,
 
     with AdvisoryLock(path=path,
                       open_read=False,
-                      open_write=False,
+                      open_write=True,  # using lockf, so NFS locks work, requires 'w'
                       flock=False,
                       file_exists=True,
                       verbose=verbose,
