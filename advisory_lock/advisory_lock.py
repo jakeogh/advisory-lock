@@ -182,4 +182,4 @@ def cli(ctx,
             import IPython
             IPython.embed()
         if hold:
-            ans = input('press enter to release % advisory lock on: '.format(lock_type) + path.as_posix())
+            ans = input('press enter to release {} advisory lock on: '.format(lock_type) + path.as_posix())
