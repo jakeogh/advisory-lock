@@ -135,6 +135,7 @@ class AdvisoryLock():
 @click.option('--flock', is_flag=True)  # making lockf the default, implies --write, on the other hand, lockf WORKS in all cases (with --write)... because flock is broken on NFS
 @click.option('--write', is_flag=True)  # as-is, this reqires thought, so it's good for now
 @click.option('--debug', is_flag=True)
+@click.option('--hold', is_flag=True)
 @click.option('--ipython', is_flag=True)
 @click.pass_context
 def cli(ctx,
@@ -144,6 +145,7 @@ def cli(ctx,
         flock: bool,
         verbose: bool,
         debug: bool,
+        hold: bool,
         ipython: bool,
         ):
 
@@ -175,3 +177,5 @@ def cli(ctx,
         if ipython:
             import IPython
             IPython.embed()
+        if hold:
+            ans = input('press enter to release advisory lock on' + path.as_posix())
