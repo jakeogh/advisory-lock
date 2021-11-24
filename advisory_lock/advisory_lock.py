@@ -161,6 +161,10 @@ def cli(ctx,
     ctx.obj['end'] = end
     ctx.obj['null'] = null
 
+    lock_type = 'lockf'
+    if flock:
+        lock_type = 'flock'
+
     path = Path(path).expanduser()
     if not flock:  # flock is broken on NFS
         if not write:
@@ -178,4 +182,4 @@ def cli(ctx,
             import IPython
             IPython.embed()
         if hold:
-            ans = input('press enter to release advisory lock on' + path.as_posix())
+            ans = input('press enter to release % advisory lock on: '.format(lock_type) + path.as_posix())
