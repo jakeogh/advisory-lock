@@ -28,9 +28,6 @@ import click
 from asserttool import ic
 from asserttool import nevd
 
-#from enumerate_input import enumerate_input
-#from retry_on_exception import retry_on_exception
-
 
 def path_is_advisory_locked(path: Path,
                             verbose: bool,
