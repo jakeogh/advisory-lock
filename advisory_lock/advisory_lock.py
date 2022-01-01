@@ -21,17 +21,19 @@
 
 import fcntl
 import os
+from math import inf
 #import sys
 from pathlib import Path
 
 import click
 from asserttool import ic
-from asserttool import nevd
+from asserttool import tv
+from clicktool import click_add_options
+from clicktool import click_global_options
 
 
 def path_is_advisory_locked(path: Path,
                             verbose: bool,
-                            debug: bool,
                             ) -> None:
 
     with AdvisoryLock(path=path,
@@ -40,7 +42,7 @@ def path_is_advisory_locked(path: Path,
                       flock=False,
                       file_exists=True,
                       verbose=verbose,
-                      debug=debug,) as fl:
+                      ) as fl:
         raise AssertionError(path.as_posix(), 'was not advisory locked')
     return  #all good
 
@@ -53,18 +55,16 @@ class AdvisoryLock():
                  open_read: bool,
                  open_write: bool,
                  flock: bool,
-                 verbose: bool,
-                 debug: bool,
+                 verbose: int,
                  ):
 
         self.verbose = verbose
-        self.debug = debug
         self.path = path
         self.file_exists = file_exists
         self.open_read = open_read
         self.open_write = open_write
         self.flock = flock
-        if debug:
+        if verbose == inf:
             ic(self.path)
 
     def __enter__(self):
@@ -125,36 +125,29 @@ class AdvisoryLock():
 
 @click.command()
 @click.argument("path", type=str, nargs=1)
-@click.option('--verbose', is_flag=True)
 @click.option('--no-read', is_flag=True)
 @click.option('--flock', is_flag=True)  # making lockf the default, implies --write, on the other hand, lockf WORKS in all cases (with --write)... because flock is broken on NFS
 @click.option('--write', is_flag=True)  # as-is, this reqires thought, so it's good for now
-@click.option('--debug', is_flag=True)
 @click.option('--hold', is_flag=True)
 @click.option('--ipython', is_flag=True)
+@click_add_options(click_global_options)
 @click.pass_context
 def cli(ctx,
         path,
         no_read: bool,
         write: bool,
         flock: bool,
-        verbose: bool,
+        verbose: int,
+        verbose_inf: bool,
         debug: bool,
         hold: bool,
         ipython: bool,
         ):
 
-    null, end, verbose, debug = nevd(ctx=ctx,
-                                     printn=False,
-                                     ipython=False,
-                                     verbose=verbose,
-                                     debug=debug,)
-
-    ctx.ensure_object(dict)
-    ctx.obj['verbose'] = verbose
-    ctx.obj['debug'] = debug
-    ctx.obj['end'] = end
-    ctx.obj['null'] = null
+    tty, verbose = tv(ctx=ctx,
+                      verbose=verbose,
+                      verbose_inf=verbose_inf,
+                      )
 
     lock_type = 'lockf'
     if flock:
@@ -171,7 +164,7 @@ def cli(ctx,
                       flock=flock,
                       file_exists=True,
                       verbose=verbose,
-                      debug=debug,) as fl:
+                      ) as fl:
         ic(fl)
         if ipython:
             import IPython
