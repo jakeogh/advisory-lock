@@ -68,7 +68,7 @@ class AdvisoryLock():
             ic(self.path)
 
     def __enter__(self):
-        if self.debug:
+        if self.verbose == inf:
             ic()
 
         # O_RDWR            Read/Write
@@ -101,17 +101,17 @@ class AdvisoryLock():
         # LOCK_NB       Nonblocking request
         if self.flock:
             fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
-            if self.debug:
+            if self.verbose == inf:
                 ic('got (flock) lock:', self.path)
         else:
             fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
-            if self.debug:
+            if self.verbose == inf:
                 ic('got (lockf) lock:', self.path)
 
         return self.fd
 
     def __exit__(self, etype, value, traceback):
-        if self.debug:
+        if self.verbose == inf:
             ic(etype)
             ic(value)
             ic(traceback)
