@@ -22,7 +22,6 @@
 import fcntl
 import os
 from math import inf
-#import sys
 from pathlib import Path
 
 import click
@@ -33,7 +32,7 @@ from clicktool import click_global_options
 
 
 def path_is_advisory_locked(path: Path,
-                            verbose: bool,
+                            verbose: int,
                             ) -> None:
 
     with AdvisoryLock(path=path,
@@ -139,7 +138,6 @@ def cli(ctx,
         flock: bool,
         verbose: int,
         verbose_inf: bool,
-        debug: bool,
         hold: bool,
         ipython: bool,
         ):
