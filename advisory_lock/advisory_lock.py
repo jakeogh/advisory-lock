@@ -26,9 +26,9 @@ from pathlib import Path
 
 import click
 from asserttool import ic
-from asserttool import tv
 from clicktool import click_add_options
 from clicktool import click_global_options
+from clicktool import tv
 
 
 def path_is_advisory_locked(path: Path,
@@ -115,7 +115,7 @@ class AdvisoryLock():
             ic(value)
             ic(traceback)
 
-        fcntl.lockf(self.fd, fcntl.LOCK_UN)
+        fcntl.lockf(self.fd, fcntl.LOCK_UN)  # bug use whatever function the locking was accomplished with
         os.close(self.fd)
 
 
