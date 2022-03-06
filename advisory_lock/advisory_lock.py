@@ -23,6 +23,7 @@ import fcntl
 import os
 from math import inf
 from pathlib import Path
+from typing import Union
 
 import click
 from asserttool import ic
@@ -31,31 +32,35 @@ from clicktool import click_global_options
 from clicktool import tv
 
 
-def path_is_advisory_locked(path: Path,
-                            verbose: int,
-                            ) -> None:
+def path_is_advisory_locked(
+    path: Path,
+    verbose: Union[bool, int, float],
+) -> None:
 
-    with AdvisoryLock(path=path,
-                      open_read=False,
-                      open_write=True,  # using lockf, so NFS locks work, requires 'w'
-                      flock=False,
-                      file_exists=True,
-                      verbose=verbose,
-                      ) as fl:
-        raise AssertionError(path.as_posix(), 'was not advisory locked')
-    return  #all good
+    with AdvisoryLock(
+        path=path,
+        open_read=False,
+        open_write=True,  # using lockf, so NFS locks work, requires 'w'
+        flock=False,
+        file_exists=True,
+        verbose=verbose,
+    ) as fl:
+        raise AssertionError(path.as_posix(), "was not advisory locked")
+    return  # all good
 
 
 # https://docs.python.org/3/library/fcntl.html
-class AdvisoryLock():
-    def __init__(self,
-                 path: Path, *,
-                 file_exists: bool,
-                 open_read: bool,
-                 open_write: bool,
-                 flock: bool,
-                 verbose: int,
-                 ):
+class AdvisoryLock:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        file_exists: bool,
+        open_read: bool,
+        open_write: bool,
+        flock: bool,
+        verbose: Union[bool, int, float],
+    ):
 
         self.verbose = verbose
         self.path = path
@@ -77,10 +82,14 @@ class AdvisoryLock():
             flags = os.O_RDWR
         elif self.open_read:
             flags = os.O_RDONLY
-        elif self.open_write:  # may want to add write_to_existing_file double check flag?
+        elif (
+            self.open_write
+        ):  # may want to add write_to_existing_file double check flag?
             flags = os.O_WRONLY
         else:
-            raise ValueError('at least one of `open_read` and `open_write` must be True')
+            raise ValueError(
+                "at least one of `open_read` and `open_write` must be True"
+            )
 
         # O_NOFOLLOW    Dont follow symlink if the last element in the path is one
         flags |= os.O_NOFOLLOW
@@ -99,13 +108,17 @@ class AdvisoryLock():
         # LOCK_EX       Place an exclusive lock.  Only one process may hold an exclusive lock for a given file at a given time.
         # LOCK_NB       Nonblocking request
         if self.flock:
-            fcntl.flock(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock  # broken on NFS
+            fcntl.flock(
+                self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
+            )  # acquire a non-blocking advisory lock  # broken on NFS
             if self.verbose == inf:
-                ic('got (flock) lock:', self.path)
+                ic("got (flock) lock:", self.path)
         else:
-            fcntl.lockf(self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # acquire a non-blocking advisory lock
+            fcntl.lockf(
+                self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
+            )  # acquire a non-blocking advisory lock
             if self.verbose == inf:
-                ic('got (lockf) lock:', self.path)
+                ic("got (lockf) lock:", self.path)
 
         return self.fd
 
@@ -115,57 +128,72 @@ class AdvisoryLock():
             ic(value)
             ic(traceback)
 
-        fcntl.lockf(self.fd, fcntl.LOCK_UN)  # bug use whatever function the locking was accomplished with
+        fcntl.lockf(
+            self.fd, fcntl.LOCK_UN
+        )  # bug use whatever function the locking was accomplished with
         os.close(self.fd)
 
 
 # import pdb; pdb.set_trace()
 # from pudb import set_trace; set_trace(paused=False)
 
+
 @click.command()
 @click.argument("path", type=str, nargs=1)
-@click.option('--no-read', is_flag=True)
-@click.option('--flock', is_flag=True)  # making lockf the default, implies --write, on the other hand, lockf WORKS in all cases (with --write)... because flock is broken on NFS
-@click.option('--write', is_flag=True)  # as-is, this reqires thought, so it's good for now
-@click.option('--hold', is_flag=True)
-@click.option('--ipython', is_flag=True)
+@click.option("--no-read", is_flag=True)
+@click.option(
+    "--flock", is_flag=True
+)  # making lockf the default, implies --write, on the other hand, lockf WORKS in all cases (with --write)... because flock is broken on NFS
+@click.option(
+    "--write", is_flag=True
+)  # as-is, this reqires thought, so it's good for now
+@click.option("--hold", is_flag=True)
+@click.option("--ipython", is_flag=True)
 @click_add_options(click_global_options)
 @click.pass_context
-def cli(ctx,
-        path,
-        no_read: bool,
-        write: bool,
-        flock: bool,
-        verbose: int,
-        verbose_inf: bool,
-        hold: bool,
-        ipython: bool,
-        ):
+def cli(
+    ctx,
+    path,
+    no_read: bool,
+    write: bool,
+    flock: bool,
+    verbose: Union[bool, int, float],
+    verbose_inf: bool,
+    dict_input: bool,
+    hold: bool,
+    ipython: bool,
+):
 
-    tty, verbose = tv(ctx=ctx,
-                      verbose=verbose,
-                      verbose_inf=verbose_inf,
-                      )
+    tty, verbose = tv(
+        ctx=ctx,
+        verbose=verbose,
+        verbose_inf=verbose_inf,
+    )
 
-    lock_type = 'lockf'
+    lock_type = "lockf"
     if flock:
-        lock_type = 'flock'
+        lock_type = "flock"
 
     path = Path(path).expanduser()
     if not flock:  # flock is broken on NFS
         if not write:
-            raise ValueError('lockf() requires a O_RDWR fd, specify --write')
+            raise ValueError("lockf() requires a O_RDWR fd, specify --write")
 
-    with AdvisoryLock(path=path,
-                      open_read=not no_read,
-                      open_write=write,
-                      flock=flock,
-                      file_exists=True,
-                      verbose=verbose,
-                      ) as fl:
+    with AdvisoryLock(
+        path=path,
+        open_read=not no_read,
+        open_write=write,
+        flock=flock,
+        file_exists=True,
+        verbose=verbose,
+    ) as fl:
         ic(fl)
         if ipython:
             import IPython
+
             IPython.embed()
         if hold:
-            ans = input('press enter to release {} advisory lock on: '.format(lock_type) + path.as_posix())
+            ans = input(
+                "press enter to release {} advisory lock on: ".format(lock_type)
+                + path.as_posix()
+            )
