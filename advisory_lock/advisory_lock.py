@@ -193,7 +193,6 @@ def cli(
 
             IPython.embed()
         if hold:
-            ans = input(
-                "press enter to release {} advisory lock on: ".format(lock_type)
-                + path.as_posix()
+            _ = input(
+                f"press enter to release {lock_type} advisory lock on: {path.as_posix()}"
             )
