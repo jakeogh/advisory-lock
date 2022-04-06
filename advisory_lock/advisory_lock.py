@@ -32,6 +32,7 @@ from clicktool import click_global_options
 from clicktool import tv
 
 
+# for cli
 def path_is_advisory_locked(
     path: Path,
     verbose: Union[bool, int, float],
@@ -44,9 +45,9 @@ def path_is_advisory_locked(
         flock=False,
         file_exists=True,
         verbose=verbose,
-    ) as fl:
+    ) as _:
         raise AssertionError(path.as_posix(), "was not advisory locked")
-    return  # all good
+    # no exception, an advisory lock exists, default return of None
 
 
 # https://docs.python.org/3/library/fcntl.html
@@ -88,7 +89,7 @@ class AdvisoryLock:
             flags = os.O_WRONLY
         else:
             raise ValueError(
-                "at least one of `open_read` and `open_write` must be True"
+                f"at least one of {self.open_read=} and {self.open_write=} must be True"
             )
 
         # O_NOFOLLOW    Dont follow symlink if the last element in the path is one
@@ -104,7 +105,8 @@ class AdvisoryLock:
         if self.verbose > 2:
             ic(self.fd, os.fstat(self.fd), self.path)
 
-        # race here _unless_ flags has os.O_CREAT | os.O_EXCL
+        # race here unless self.file_exists=False (and therefore flags |= os.O_CREAT | os.O_EXCL)
+        #   its a race because another process could have obtained self.fd...
         # LOCK_EX       Place an exclusive lock.  Only one process may hold an exclusive lock for a given file at a given time.
         # LOCK_NB       Nonblocking request
         if self.flock:
@@ -134,10 +136,6 @@ class AdvisoryLock:
         os.close(self.fd)
 
 
-# import pdb; pdb.set_trace()
-# from pudb import set_trace; set_trace(paused=False)
-
-
 @click.command()
 @click.argument("path", type=str, nargs=1)
 @click.option("--no-read", is_flag=True)
@@ -149,6 +147,7 @@ class AdvisoryLock:
 )  # as-is, this reqires thought, so it's good for now
 @click.option("--hold", is_flag=True)
 @click.option("--ipython", is_flag=True)
+@click.option("--pdb", "pudb", is_flag=True)
 @click_add_options(click_global_options)
 @click.pass_context
 def cli(
@@ -162,6 +161,7 @@ def cli(
     dict_input: bool,
     hold: bool,
     ipython: bool,
+    pudb: bool,
 ):
 
     tty, verbose = tv(
@@ -188,10 +188,20 @@ def cli(
         verbose=verbose,
     ) as fl:
         ic(fl)
+        # pylint: disable=C0415
+        # pylint: disable=W1515
         if ipython:
             import IPython
 
             IPython.embed()
+        if pudb:
+            import pdb
+
+            pdb.set_trace()
+            from pudb import set_trace
+
+            set_trace(paused=False)
+
         if hold:
             _ = input(
                 f"press enter to release {lock_type} advisory lock on: {path.as_posix()}"
