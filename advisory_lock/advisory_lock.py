@@ -47,7 +47,7 @@ def path_is_advisory_locked(
         verbose=verbose,
     ) as _:
         raise AssertionError(path.as_posix(), "was not advisory locked")
-    # no exception, an advisory lock exists, default return of None
+    # no Exception, an advisory lock exists, default return of None
 
 
 # https://docs.python.org/3/library/fcntl.html
@@ -188,7 +188,7 @@ def cli(
         verbose=verbose,
     ) as fl:
         ic(fl)
-        # pylint: disable=C0415
+        # pylint: disable=import-outside-toplevel # pylint: disable=C0415
         # pylint: disable=W1515
         if ipython:
             import IPython
