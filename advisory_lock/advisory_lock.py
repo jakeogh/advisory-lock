@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
+# pylint: disable=useless-suppression             # [I0021]
 # pylint: disable=missing-docstring               # [C0111] docstrings are always outdated and wrong
 # pylint: disable=fixme                           # [W0511] todo is encouraged
 # pylint: disable=line-too-long                   # [C0301]
