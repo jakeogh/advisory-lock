@@ -22,20 +22,19 @@ from __future__ import annotations
 
 import fcntl
 import os
-from math import inf
 from pathlib import Path
 
 import click
 from asserttool import ic
 from clicktool import click_add_options
 from clicktool import click_global_options
-from clicktool import tv
+from clicktool import tvicgvd
+from globalverbose import gvd
 
 
 # for cli
 def path_is_advisory_locked(
     path: Path,
-    verbose: bool | int | float,
 ) -> None:
 
     with AdvisoryLock(
@@ -44,7 +43,6 @@ def path_is_advisory_locked(
         open_write=True,  # using lockf, so NFS locks work, requires 'w'
         flock=False,
         file_exists=True,
-        verbose=verbose,
     ) as _:
         raise AssertionError(path.as_posix(), "was not advisory locked")
     # no Exception, an advisory lock exists, default return of None
@@ -60,21 +58,17 @@ class AdvisoryLock:
         open_read: bool,
         open_write: bool,
         flock: bool,
-        verbose: bool | int | float,
     ):
 
-        self.verbose = verbose
         self.path = path
         self.file_exists = file_exists
         self.open_read = open_read
         self.open_write = open_write
         self.flock = flock
-        if verbose == inf:
-            ic(self.path)
+        ic(self.path)
 
     def __enter__(self):
-        if self.verbose == inf:
-            ic()
+        ic()
 
         # O_RDWR            Read/Write
         # O_RDONLY          Write Only
@@ -102,8 +96,7 @@ class AdvisoryLock:
         assert self.path.exists()
 
         self.fd = os.open(self.path, flags, 0o600)
-        if self.verbose > 2:
-            ic(self.fd, os.fstat(self.fd), self.path)
+        ic(self.fd, os.fstat(self.fd), self.path)
 
         # race here unless self.file_exists=False (and therefore flags |= os.O_CREAT | os.O_EXCL)
         #   its a race because another process could have obtained self.fd...
@@ -113,22 +106,19 @@ class AdvisoryLock:
             fcntl.flock(
                 self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
             )  # acquire a non-blocking advisory lock  # broken on NFS
-            if self.verbose == inf:
-                ic("got (flock) lock:", self.path)
+            ic("got (flock) lock:", self.path)
         else:
             fcntl.lockf(
                 self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
             )  # acquire a non-blocking advisory lock
-            if self.verbose == inf:
-                ic("got (lockf) lock:", self.path)
+            ic("got (lockf) lock:", self.path)
 
         return self.fd
 
     def __exit__(self, etype, value, traceback):
-        if self.verbose == inf:
-            ic(etype)
-            ic(value)
-            ic(traceback)
+        ic(etype)
+        ic(value)
+        ic(traceback)
 
         fcntl.lockf(
             self.fd, fcntl.LOCK_UN
@@ -156,18 +146,20 @@ def cli(
     no_read: bool,
     write: bool,
     flock: bool,
-    verbose: bool | int | float,
     verbose_inf: bool,
     dict_output: bool,
     hold: bool,
     ipython: bool,
     pudb: bool,
+    verbose: bool = False,
 ):
 
-    tty, verbose = tv(
+    tty, verbose = tvicgvd(
         ctx=ctx,
         verbose=verbose,
         verbose_inf=verbose_inf,
+        ic=ic,
+        gvd=gvd,
     )
 
     lock_type = "lockf"
@@ -185,7 +177,6 @@ def cli(
         open_write=write,
         flock=flock,
         file_exists=True,
-        verbose=verbose,
     ) as fl:
         ic(fl)
         # pylint: disable=import-outside-toplevel # pylint: disable=C0415
