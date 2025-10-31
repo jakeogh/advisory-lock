@@ -8,11 +8,6 @@ import os
 from pathlib import Path
 
 import click
-from asserttool import ic
-from clicktool import click_add_options
-from clicktool import click_global_options
-from clicktool import tvicgvd
-from globalverbose import gvd
 
 
 # for cli
@@ -48,10 +43,8 @@ class AdvisoryLock:
         self.open_read = open_read
         self.open_write = open_write
         self.flock = flock
-        ic(self.path)
 
     def __enter__(self):
-        ic()
 
         # O_RDWR            Read/Write
         # O_RDONLY          Write Only
@@ -79,7 +72,7 @@ class AdvisoryLock:
         assert self.path.exists()
 
         self.fd = os.open(self.path, flags, 0o600)
-        ic(self.fd, os.fstat(self.fd), self.path)
+        # ic(self.fd, os.fstat(self.fd), self.path)
 
         # race here unless self.file_exists=False (and therefore flags |= os.O_CREAT | os.O_EXCL)
         #   its a race because another process could have obtained self.fd...
@@ -89,12 +82,12 @@ class AdvisoryLock:
             fcntl.flock(
                 self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
             )  # acquire a non-blocking advisory lock  # broken on NFS
-            ic("got (flock) lock:", self.path)
+            # ic("got (flock) lock:", self.path)
         else:
             fcntl.lockf(
                 self.fd, fcntl.LOCK_EX | fcntl.LOCK_NB
             )  # acquire a non-blocking advisory lock
-            ic("got (lockf) lock:", self.path)
+            # ic("got (lockf) lock:", self.path)
 
         return self.fd
 
@@ -104,9 +97,9 @@ class AdvisoryLock:
         value,
         traceback,
     ):
-        ic(etype)
-        ic(value)
-        ic(traceback)
+        # ic(etype)
+        # ic(value)
+        # ic(traceback)
 
         fcntl.lockf(
             self.fd, fcntl.LOCK_UN
@@ -126,11 +119,11 @@ class AdvisoryLock:
 @click.option("--hold", is_flag=True)
 @click.option("--ipython", is_flag=True)
 @click.option("--pdb", "pudb", is_flag=True)
-@click_add_options(click_global_options)
 @click.pass_context
 def cli(
     ctx,
-    path,
+    *,
+    path: str,
     no_read: bool,
     write: bool,
     flock: bool,
@@ -141,14 +134,6 @@ def cli(
     pudb: bool,
     verbose: bool = False,
 ):
-
-    tty, verbose = tvicgvd(
-        ctx=ctx,
-        verbose=verbose,
-        verbose_inf=verbose_inf,
-        ic=ic,
-        gvd=gvd,
-    )
 
     lock_type = "lockf"
     if flock:
@@ -166,20 +151,20 @@ def cli(
         flock=flock,
         file_exists=True,
     ) as fl:
-        ic(fl)
+        # ic(fl)
         # pylint: disable=import-outside-toplevel # pylint: disable=C0415
         # pylint: disable=W1515
-        if ipython:
-            import IPython
+        # if ipython:
+        #    import IPython
 
-            IPython.embed()
-        if pudb:
-            import pdb
+        #    IPython.embed()
+        # if pudb:
+        #    import pdb
 
-            pdb.set_trace()
-            from pudb import set_trace
+        #    pdb.set_trace()
+        #    from pudb import set_trace
 
-            set_trace(paused=False)
+        #    set_trace(paused=False)
 
         if hold:
             _ = input(
