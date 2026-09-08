@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "advisory_lock"
-version = "1!0.0.1761894265"
-description = "Short explination of what it does _here_"
+version = "1!0.0.1788850242"
+description = "Context manager for fcntl advisory locks"
 authors = [
     { name = "Justin Keogh", email = "github.com@v6y.net" },
 ]
@@ -18,7 +18,7 @@ license = "ISC"
 requires-python = ">=3.11"
 
 [project.urls]
-Homepage = "https://github.com/jakeogh/advisory_lock"
+Homepage = "https://github.com/jakeogh/advisory-lock"
 
 [project.scripts]
 advisory-lock = "advisory_lock.advisory_lock:cli"
